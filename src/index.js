@@ -122,45 +122,6 @@ function parseDocuments_page($) {
   }
 
   return docs
-  // you can find documentation about the scrape function here :
-  // https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#scrape
-/*  const docs = scrape(
-    $,
-    {
-      title: {
-        sel: 'a > div',
-        parse: GetTitle
-//        fn: $node => $node.attribs.tagName
-      },
-      fileurl: {
-        sel: 'a',
-        attr: 'href',
-        parse: src => `${baseUrl}/${src}`
-      },
-    },
-    'div .ged-blockquote'
-  )
-
-//  for (i=0;i<docs.length;i++)
-//    log('info',docs[i].title)
-
-
-
-  return docs.map(doc => ({
-    ...doc,
-    // the saveBills function needs a date field
-    // even if it is a little artificial here (these are not real bills)
-    date: dateFromTitle(doc.title),
-    vendor: 'citya',
-    filename: doc.title + '.pdf',
-    metadata: {
-      // it can be interesting that we add the date of import. This is not mandatory but may be
-      // useful for debugging or data migration
-      importDate: new Date(),
-      // document version, useful for migration after change of document structure
-      version: 1
-    }
-  }))*/
 
 }
 
@@ -188,30 +149,6 @@ function dateFromTitle(sTitre) {
   return new Date(found[2] + '-' + found[1] + '-' + found[0]);
 
 }
-
-function GetTitle(sNoeud)
-{
-	log('info',JSON.stringify(sNoeud,JSON_analyse));
-}
-
-function JSON_analyse(key, value) {
-    if (typeof value === 'object' && value !== null) {
-        if (cache.indexOf(value) !== -1) {
-            // Duplicate reference found
-            try {
-                // If this value does not reference a parent it can be deduped
-                return JSON.parse(JSON.stringify(value));
-            } catch (error) {
-                // discard key if value cannot be deduped
-                return;
-            }
-        }
-        // Store value in our collection
-        cache.push(value);
-    }
-    return value;
-}
-
 
 function parseDocuments_syndic($)
 {
