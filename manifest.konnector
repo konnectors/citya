@@ -4,7 +4,7 @@
   "type": "konnector",
   "language": "node",
   "icon": "icon.png",
-  "slug": "template",
+  "slug": "citya",
   "source": "https://github.com/konnectors/citya.git",
   "editor": "Marc Polycarpe",
   "vendor_link": "https://www.citya.com/i-citya/coproprietaire",
@@ -43,7 +43,7 @@
     }
   },
   "developer": {
-    "name": "Cozy Cloud",
+    "name": "Marc Polycarpe",
     "url": "https://cozy.io"
   },
   "langs": ["fr", "en"],
@@ -51,7 +51,7 @@
     "fr": {
       "short_description": "Connecteur citya",
       "long_description": "Ce connecteur récupère les factures sur votre  espace propriétaire Citya",
-      "permissions":
+      "permissions": {
         "files": {
           "description": "Utilisé pour sauvegarder les factures"
         },
@@ -63,7 +63,7 @@
     "en": {
       "short_description": "Citya Connector",
       "long_description": "This connector fetches the bills on your Citya owner account",
-      "permissions":
+      "permissions": {
         "files": {
           "description": "Required to save the bills"
         },
