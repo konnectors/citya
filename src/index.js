@@ -2,7 +2,6 @@ const {
   BaseKonnector,
   requestFactory,
   signin,
-  scrape,
   saveFiles,
   log
 } = require('cozy-konnector-libs')
@@ -20,10 +19,8 @@ const request = requestFactory({
   jar: true
 })
 
-var cache=[];
-
 const baseUrl = 'https://i-citya.com/extranet'
-var $;
+var $
 module.exports = new BaseKonnector(start)
 
 // The start function is run by the BaseKonnector instance only when it got all the account
@@ -39,12 +36,11 @@ async function start(fields) {
   // cheerio (https://cheerio.js.org/) uses the same api as jQuery (http://jquery.com/)
   log('info', 'Parsing list of documents')
   const documents = await parseDocuments($)
-  
-  log('info','Save data to Cozy')
-  await saveFiles(documents, fields, {
-    timeout: Date.now() + 300*1000
-  })
 
+  log('info', 'Save data to Cozy')
+  await saveFiles(documents, fields, {
+    timeout: Date.now() + 300 * 1000
+  })
 }
 
 // this shows authentication using the [signin function](https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#module_signin)
@@ -53,12 +49,15 @@ function authenticate(username, password) {
   return signin({
     url: `https://www.citya.com/i-citya/coproprietaire`,
     formSelector: 'form',
-    formData: { login:username, mdp:password, vous_etes:'/i-citya/coproprietaire' },
+    formData: {
+      login: username,
+      mdp: password,
+      vous_etes: '/i-citya/coproprietaire'
+    },
     // the validate function will check if the login request was a success. Every website has
     // different ways respond: http status code, error message in html ($), http redirection
     // (fullResponse.request.uri.href)...
-    validate: (statusCode, $, fullResponse) => {
-
+    validate: (statusCode, $) => {
       // The login in toscrape.com always works excepted when no password is set
       if ($(`a[href='deconnexion-citya.html']`).length >= 1) {
         return true
@@ -76,84 +75,76 @@ function authenticate(username, password) {
 // and return an array of js objects which will be saved to the cozy by saveBills (https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#savebills)
 async function parseDocuments($) {
   // Il faut recuperer les liens
-  tabLiens = $('.text-box>a');
-  var docs = [];
-  for(i=0;i<tabLiens.length;i++)
-  {
-   // Fait la requete
-   $ = await request(baseUrl + '/' + tabLiens[i].attribs.href);
+  var tabLiens = $('.text-box>a')
+  var docs = []
+  for (var i = 0; i < tabLiens.length; i++) {
+    // Fait la requete
+    $ = await request(baseUrl + '/' + tabLiens[i].attribs.href)
 
     // Recupere les documents de la page
-    documents = parseDocuments_page($);
+    var documents = parseDocuments_page($)
     docs.push(...documents)
     // pour l'instant on ne fait pas les documents du syndic
     // voir la fonction parseDocuments_syndic pour 'comment il faudrait faire'
-    break;
-  }
-
-  return docs;
-}
-
-function parseDocuments_page($) {
-
-  tabLiens = $('.ged-blockquote>a');
-
-  log('info','Nombre de liens : ' + tabLiens.length);
-  var docs = [];
-  for (var i=0;i< tabLiens.length;i++)
-  {
-    oLien =  tabLiens[i];
-
-   sTitre = oLien.children[1].children[2].data;
-   sTitre = sTitre.trim();
-
-   sFileURL = baseUrl + '/' + oLien.attribs.href;
-   sDate = dateFromTitle(sTitre);
-
-   sFileName = getParamFromQueryString(sFileURL,'file');
-
-   log('info','sTitre : ' + sTitre)
-   log('info','sFileURL : ' + sFileURL)
-   log('info','sDate : ' + sDate)
-   log('info','sFileName : ' + sFileName)
-
-   docs.push({title:sTitre, fileurl:sFileURL, date:sDate, filename:sFileName });
-
+    break
   }
 
   return docs
-
 }
 
-function getParamFromQueryString(sURL, sParam)
-{
- tabParams = sURL.split('?');
- tabParams = tabParams[1].split('&');
- for (var i=0;i< tabParams.length;i++)
- {
-   tabParam =  tabParams[i].split('=');
-   if (tabParam[0] == sParam)
-     return tabParam[1];
- }
- return ''
+function parseDocuments_page($) {
+  var tabLiens = $('.ged-blockquote>a')
 
+  log('info', 'Nombre de liens : ' + tabLiens.length)
+  var docs = []
+  for (var i = 0; i < tabLiens.length; i++) {
+    var oLien = tabLiens[i]
+
+    var sTitre = oLien.children[1].children[2].data
+    sTitre = sTitre.trim()
+
+    var sFileURL = baseUrl + '/' + oLien.attribs.href
+    var sDate = dateFromTitle(sTitre)
+
+    var sFileName = getParamFromQueryString(sFileURL, 'file')
+
+    log('info', 'sTitre : ' + sTitre)
+    log('info', 'sFileURL : ' + sFileURL)
+    log('info', 'sDate : ' + sDate)
+    log('info', 'sFileName : ' + sFileName)
+
+    docs.push({
+      title: sTitre,
+      fileurl: sFileURL,
+      date: sDate,
+      filename: sFileName
+    })
+  }
+
+  return docs
+}
+
+function getParamFromQueryString(sURL, sParam) {
+  var tabParams = sURL.split('?')
+  tabParams = tabParams[1].split('&')
+  for (var i = 0; i < tabParams.length; i++) {
+    var tabParam = tabParams[i].split('=')
+    if (tabParam[0] == sParam) return tabParam[1]
+  }
+  return ''
 }
 
 // convert a price string to a float
 function dateFromTitle(sTitre) {
+  // titre :  Appels de fonds du 01 01 2019
+  var regex = /([0-9]{2,4})/g
+  var found = sTitre.match(regex)
 
-  // titre :  Appels de fonds du 01 01 2019 
-  var regex = /([0-9]{2,4})/g;
-  var found = sTitre.match(regex);
-
-  return new Date(found[2] + '-' + found[1] + '-' + found[0]);
-
+  return new Date(found[2] + '-' + found[1] + '-' + found[0])
 }
 
-function parseDocuments_syndic($)
-{
-
-// Selecteur des divs dossier : "div[id^='dossier-']", 
+//function parseDocuments_syndic($) {
+// Selecteur des divs dossier : "div[id^='dossier-']",
 // Chargement du contenu (il faut que ca soit recursif (ca peut renvoyer des sous dossier)
 // ca renvoie soit des divs avec  le meme fonctionnement, soit des liens de la forme :
 /*
@@ -208,4 +199,4 @@ function parseDocuments_syndic($)
 
 
 */
-}
+//}
