@@ -19,7 +19,7 @@ const request = requestFactory({
   jar: true
 })
 
-const baseUrl = 'https://i-citya.com/extranet'
+const baseUrl = 'https://my.citya.com/V5/'
 var $
 module.exports = new BaseKonnector(start)
 
@@ -47,12 +47,12 @@ async function start(fields) {
 // even if this in another domain here, but it works as an example
 function authenticate(username, password) {
   return signin({
-    url: `https://www.citya.com/i-citya/coproprietaire`,
-    formSelector: 'form',
+    url: `https://www.citya.com/mycitya`,
+    formSelector: 'form[name=i_citya_login]',
     formData: {
       login: username,
       mdp: password,
-      vous_etes: '/i-citya/coproprietaire'
+      groupe: 'citya'
     },
     // the validate function will check if the login request was a success. Every website has
     // different ways respond: http status code, error message in html ($), http redirection
